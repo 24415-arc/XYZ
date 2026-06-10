@@ -81,14 +81,14 @@
                 </div>
 
                 <div class="grid-inputs">
-                    <div class="input-group"><label>매출액 (월/원)</label><input type="number" id="revenue" value="15000000"></div>
-                    <div class="input-group"><label>영업비용 (월/원)</label><input type="number" id="expenses" value="12000000"></div>
-                    <div class="input-group"><label>총 자산 (원)</label><input type="number" id="assets" value="80000000"></div>
-                    <div class="input-group"><label>총 부채/대출 (원)</label><input type="number" id="liabilities" value="30000000"></div>
+                    <div class="input-group"><label>매출액 (월/원)</label><input type="number" id="revenue" placeholder="예: 15000000"></div>
+                    <div class="input-group"><label>영업비용 (월/원)</label><input type="number" id="expenses" placeholder="예: 12000000"></div>
+                    <div class="input-group"><label>총 자산 (원)</label><input type="number" id="assets" placeholder="예: 80000000"></div>
+                    <div class="input-group"><label>총 부채/대출 (원)</label><input type="number" id="liabilities" placeholder="예: 30000000"></div>
                 </div>
                 <div class="input-group" style="margin-top: 10px;">
                     <label>현재 직면한 핵심 경영 안건 및 고민</label>
-                    <textarea id="note" rows="3">최근 플랫폼 배달 대행료 부담이 가중되어 마진이 줄고 있습니다. 배달을 줄이고 홀 이벤트를 늘릴까요?</textarea>
+                    <textarea id="note" rows="3" placeholder="현재 매장이 직면한 핵심 경영 안건 및 고민을 입력해 주세요. (예: 배달 대행료 부담 증가 대응 방안, 홀 이벤트 기획 등)"></textarea>
                 </div>
                 <button id="analyzeBtn">🚀 가상 이사회 소집 (GAS 안전 호출)</button>
             </div>
@@ -128,13 +128,13 @@
     import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { getFirestore, collection, addDoc, getDocs, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // 🔴 [필수] 본인의 Firebase 웹 앱 SDK 설정을 입력하세요.
+    // 🔴 사장님의 실제 Firebase 프로젝트 정보가 정확하게 설정되어 있습니다.
     const firebaseConfig = {
         apiKey: "AIzaSyAOwxt7f8_J5ZNxpNZ5R8jkD0bDjsahvek",
         authDomain: "test-2bc53.firebaseapp.com",
         projectId: "test-2bc53",
         storageBucket: "test-2bc53.appspot.com",
-        messagingSenderId: "153078496505", // <-- 이전 대화에서 짚어주신 진짜 값 매핑 구역
+        messagingSenderId: "153078496505", 
         appId: "1:153078496505:web:7892a2428453934cc2f628"
     };
 
@@ -142,13 +142,12 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // 🔴 [필수] 구글 앱스 스크립트(GAS) 배포 후 생성된 웹 앱 URL을 여기에 붙여넣으세요.
+    // 🔴 [필수 확인] 구글 앱스 스크립트(GAS) 배포 후 생성된 본인의 웹 앱 URL을 여기에 붙여넣으세요.
     const GAS_WEB_APP_URL = "https://script.google.com/macros/s/여기에_본인의_배포_아이디_입력/exec";
 
     let currentUser = null;
     let globalAudioText = ""; 
 
-    // 각 임원의 성격 및 역할 부여 프롬프트 (마스터 프롬프트와 연결용)
     const BOARD_SYSTEM_PROMPTS = {
         CFO: `당신은 자영업 및 중소기업 전문 재무고문(CFO)입니다. 제공된 '확정 재무 지표'만을 근거로 비용 통제와 자금 리스크를 따지세요. 문장 서두에 "💡 [재무고문 CFO 분석 의견]"을 달고, 현금 유동성 위기 경고 및 구체적인 비용 절감 전략 2가지를 냉철하고 보수적인 톤으로 제안하세요.`,
         CMO: `당신은 공격적인 로컬 상권 마케팅 전략가(CMO)입니다. 제공된 지표를 기반으로 마케팅 예산을 확보해 매출 자체를 획기적으로 키울 돌파구를 모색하세요. 문장 서두에 "🚀 [마케팅전략 CMO 분석 의견]"을 달고, 사장님의 핵심 안건을 해결할 수 있는 트렌디한 온/오프라인 세일즈 아이디어 2가지를 열정적인 어조로 제안하세요.`,
@@ -157,7 +156,7 @@
     };
 
     // --------------------------------------------------
-    // [기능 5] 업로드된 CSV 파일 파싱 엔진 (SheetJS 연동)
+    // 업로드된 CSV 파일 파싱 엔진 (SheetJS 연동)
     // --------------------------------------------------
     const dropzone = document.getElementById('dropzone');
     const fileInput = document.getElementById('fileInput');
@@ -197,7 +196,7 @@
     }
 
     // --------------------------------------------------
-    // [기능 1] Firebase Authentication (인증 제어)
+    // Firebase Authentication (인증 제어)
     // --------------------------------------------------
     onAuthStateChanged(auth, (user) => {
         if (user) {
@@ -224,14 +223,16 @@
     document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
 
     // --------------------------------------------------
-    // [기능 3] GAS 우회형 4인 가상 이사회 에이전트 구동 엔진
+    // GAS 우회형 4인 가상 이사회 에이전트 구동 엔진
     // --------------------------------------------------
     document.getElementById('analyzeBtn').addEventListener('click', async () => {
-        const rev = Number(document.getElementById('revenue').value);
-        const exp = Number(document.getElementById('expenses').value);
-        const ast = Number(document.getElementById('assets').value);
-        const lia = document.getElementById('liabilities').value;
+        const rev = Number(document.getElementById('revenue').value || 0);
+        const exp = Number(document.getElementById('expenses').value || 0);
+        const ast = Number(document.getElementById('assets').value || 0);
+        const lia = Number(document.getElementById('liabilities').value || 0);
         const note = document.getElementById('note').value;
+
+        if(!rev && !exp) return alert("매출액 또는 영업비용을 입력하거나 파일을 업로드해 주세요.");
 
         const margin = rev === 0 ? 0 : (((rev - exp) / rev) * 100).toFixed(2);
         const debt = ast === 0 ? 0 : ((lia / ast) * 100).toFixed(2);
@@ -239,11 +240,9 @@
         document.getElementById('loading').style.display = 'block';
         document.getElementById('resultSection').style.display = 'none';
 
-        // 백엔드 단일 속성 전달을 위해 페르소나 지시문과 데이터를 결합하는 빌더 구조 고안
-        const metricsPrompt = `\n\n[시스템 확정 지표]\n- 월 매출: ${rev.toLocaleString()}원\n- 월 비용: ${exp.toLocaleString()}원\n- 자산: ${ast.toLocaleString()}원\n- 부채: ${Number(lia).toLocaleString()}원\n- 이익률: ${margin}%\n- 부채비율: ${debt}%\n\n[안건]\n"${note}"`;
+        const metricsPrompt = `\n\n[시스템 확정 지표]\n- 월 매출: ${rev.toLocaleString()}원\n- 월 비용: ${exp.toLocaleString()}원\n- 자산: ${ast.toLocaleString()}원\n- 부채: ${lia.toLocaleString()}원\n- 이익률: ${margin}%\n- 부채비율: ${debt}%\n\n[안건]\n"${note}"`;
 
         try {
-            // 사장님이 작성해주신 코드를 그대로 호환하기 위해 단일 텍스트를 question에 담아 병렬 요청 실행
             const [cfoRes, cmoRes, cooRes, chroRes] = await Promise.all([
                 callAgent(BOARD_SYSTEM_PROMPTS.CFO + metricsPrompt),
                 callAgent(BOARD_SYSTEM_PROMPTS.CMO + metricsPrompt),
@@ -259,7 +258,7 @@
             globalAudioText = `이사회 브리핑입니다. CFO 의견입니다. ${cfoRes} CMO 의견입니다. ${cmoRes} COO 의견입니다. ${cooRes} CHRO 의견입니다. ${chroRes}`;
             document.getElementById('resultSection').style.display = 'block';
 
-            await saveDataToFirestore(rev, exp, ast, Number(lia), margin, debt, note);
+            await saveDataToFirestore(rev, exp, ast, lia, margin, debt, note);
 
         } catch (error) {
             alert("회의 도중 에러가 발생했습니다: " + error.message);
@@ -268,23 +267,22 @@
         }
     });
 
-    // 사장님의 GAS 백엔드 스펙에 정확히 맞춘 전송 함수 (임의 수정 최소화)
     async function callAgent(combinedPrompt) {
         const response = await fetch(GAS_WEB_APP_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // CORS 회피용 헤더
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
             body: JSON.stringify({
-                question: combinedPrompt // 사장님 코드의 requestData.question 바인딩
+                question: combinedPrompt 
             })
         });
         
         const data = await response.json();
         if (data.error) throw new Error(data.error);
-        return data.answer; // 사장님 코드의 결과 필드 수신
+        return data.answer; 
     }
 
     // --------------------------------------------------
-    // [기능 2] Firebase Firestore 데이터 관리 (CRUD)
+    // Firebase Firestore 데이터 관리 (CRUD)
     // --------------------------------------------------
     async function saveDataToFirestore(rev, exp, ast, lia, margin, debt, note) {
         if (!currentUser) return;
@@ -313,14 +311,14 @@
                 if (data.uid === currentUser.uid) { 
                     const li = document.createElement('li');
                     li.className = 'history-item';
-                    li.innerText = `📈 이익률 ${data.profitMargin}% / 부채 ${data.debtRatio}%\n[안건]: ${data.topic.substring(0,18)}...`;
+                    li.innerText = `📈 이익률 ${data.profitMargin}% / 부채 ${data.debtRatio}%\n[안건]: ${(data.topic || "").substring(0,18)}...`;
                     
                     li.onclick = () => {
-                        document.getElementById('revenue').value = data.revenue;
-                        document.getElementById('expenses').value = data.expenses;
-                        document.getElementById('assets').value = data.assets;
-                        document.getElementById('liabilities').value = data.liabilities;
-                        document.getElementById('note').value = data.topic;
+                        document.getElementById('revenue').value = data.revenue || "";
+                        document.getElementById('expenses').value = data.expenses || "";
+                        document.getElementById('assets').value = data.assets || "";
+                        document.getElementById('liabilities').value = data.liabilities || "";
+                        document.getElementById('note').value = data.topic || "";
                         alert("과거 스냅샷 데이터가 로드되었습니다.");
                     };
                     list.appendChild(li);
@@ -330,7 +328,7 @@
     }
 
     // --------------------------------------------------
-    // [기능 4] GAS 우회형 고속 TTS 스트리밍 복원 엔지니어링
+    // GAS 우회형 고속 TTS 스트리밍 복원 엔지니어링
     // --------------------------------------------------
     document.getElementById('ttsBtn').addEventListener('click', async () => {
         const btn = document.getElementById('ttsBtn');
@@ -340,20 +338,18 @@
         btn.disabled = true;
 
         try {
-            // 업그레이드된 GAS 분기문을 호출하기 위해 type: 'tts' 데이터 송신
             const response = await fetch(GAS_WEB_APP_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify({
                     type: 'tts',
-                    text: globalAudioText.substring(0, 3500) // 전송 버퍼 용량 한계선 준수
+                    text: globalAudioText.substring(0, 3500) 
                 })
             });
 
             const data = await response.json();
             if(data.error) throw new Error(data.error);
 
-            // 백엔드가 스트링으로 압축해서 보내온 Base64 바이너리를 복원(디코딩)
             const binaryString = atob(data.audio);
             const len = binaryString.length;
             const bytes = new Uint8Array(len);
@@ -364,7 +360,6 @@
             const blob = new Blob([bytes], { type: 'audio/mpeg' });
             const audioUrl = URL.createObjectURL(blob);
             
-            // UI 동적 결합 및 플레이어 랜더링
             document.getElementById('audioPlayer').innerHTML = `
                 <audio controls autoplay style="width: 100%; max-width: 500px;"><source src="${audioUrl}" type="audio/mpeg"></audio>
                 <div style="margin-top:10px;"><a href="${audioUrl}" download="이사회_브리핑.mp3" style="font-size:0.9em; font-weight:bold; color:var(--primary); text-decoration:none;">💾 MP3 회의록 다운로드</a></div>
