@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BizMind AI - 가상 이사회 (완전 보안형)</title>
+    <title>BizMind AI - 가상 이사회 </title>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         :root { 
@@ -45,8 +45,8 @@
 
 <div class="container">
     <header style="text-align: center; margin-bottom: 30px;">
-        <h1 style="color: var(--primary); margin-bottom: 5px;">💼 BizMind AI : 소상공인 가상 이사회</h1>
-        <p style="color: #6b7280; margin-top: 0;">Auth + DB + GAS 백엔드 통합 대시보드 (API Key 완전 은닉)</p>
+        <h1 style="color: var(--primary); margin-bottom: 5px;">💼 BizMind AI : 인공지능 가상 이사회</h1>
+        <p style="color: #6b7280; margin-top: 0;">Auth + DB + GAS 백엔드 통합 대시보드 </p>
     </header>
 
     <div class="card" id="authSection" style="max-width: 450px; margin: 0 auto;">
@@ -124,9 +124,10 @@
 </div>
 
 <script type="module">
+    // 💡 [수정됨] where가 추가되었습니다.
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { getFirestore, collection, addDoc, getDocs, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     // 🔴 사장님의 실제 Firebase 프로젝트 정보가 정확하게 설정되어 있습니다.
     const firebaseConfig = {
@@ -143,7 +144,8 @@
     const db = getFirestore(app);
 
     // 🔴 [필수 확인] 구글 앱스 스크립트(GAS) 배포 후 생성된 본인의 웹 앱 URL을 여기에 붙여넣으세요.
-const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzPjOUgGcQImGCC8f-UtxGnhJayhaAi5mrdVl68Lk7mHtHKH3hO_PwzEnsCrcNffaPF/exec";
+    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzPjOUgGcQImGCC8f-UtxGnhJayhaAi5mrdVl68Lk7mHtHKH3hO_PwzEnsCrcNffaPF/exec";
+    
     let currentUser = null;
     let globalAudioText = ""; 
 
@@ -302,28 +304,37 @@ const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzPjOUgGcQImGCC
         if (!currentUser) return;
 
         try {
-            const q = query(collection(db, "board_reports"), orderBy("timestamp", "desc"));
+            // 💡 [수정됨] DB에서 로그인한 사용자의 데이터만 가져오도록 where 필터링 추가
+            const q = query(
+                collection(db, "board_reports"), 
+                where("uid", "==", currentUser.uid), 
+                orderBy("timestamp", "desc")
+            );
             const querySnapshot = await getDocs(q);
             
             querySnapshot.forEach((doc) => {
                 const data = doc.data();
-                if (data.uid === currentUser.uid) { 
-                    const li = document.createElement('li');
-                    li.className = 'history-item';
-                    li.innerText = `📈 이익률 ${data.profitMargin}% / 부채 ${data.debtRatio}%\n[안건]: ${(data.topic || "").substring(0,18)}...`;
-                    
-                    li.onclick = () => {
-                        document.getElementById('revenue').value = data.revenue || "";
-                        document.getElementById('expenses').value = data.expenses || "";
-                        document.getElementById('assets').value = data.assets || "";
-                        document.getElementById('liabilities').value = data.liabilities || "";
-                        document.getElementById('note').value = data.topic || "";
-                        alert("과거 스냅샷 데이터가 로드되었습니다.");
-                    };
-                    list.appendChild(li);
-                }
+                const li = document.createElement('li');
+                li.className = 'history-item';
+                li.innerText = `📈 이익률 ${data.profitMargin}% / 부채 ${data.debtRatio}%\n[안건]: ${(data.topic || "").substring(0,18)}...`;
+                
+                li.onclick = () => {
+                    document.getElementById('revenue').value = data.revenue || "";
+                    document.getElementById('expenses').value = data.expenses || "";
+                    document.getElementById('assets').value = data.assets || "";
+                    document.getElementById('liabilities').value = data.liabilities || "";
+                    document.getElementById('note').value = data.topic || "";
+                    alert("과거 스냅샷 데이터가 로드되었습니다.");
+                };
+                list.appendChild(li);
             });
-        } catch (e) { console.error("Firestore 읽기 실패:", e); }
+        } catch (e) { 
+            console.error("Firestore 읽기 실패:", e); 
+            // 💡 복합 인덱스 에러 안내
+            if(e.message.includes('index')) {
+                console.warn("⚠️ Firebase 복합 인덱스 생성이 필요합니다. F12 콘솔창의 링크를 클릭해서 인덱스를 생성해 주세요.");
+            }
+        }
     }
 
     // --------------------------------------------------
