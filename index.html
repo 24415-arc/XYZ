@@ -37,9 +37,6 @@
         .board-card.chro { border-color: var(--chro); }
         
         #appSection { display: none; }
-        .history-list { list-style: none; padding: 0; max-height: 320px; overflow-y: auto; }
-        .history-item { background: #eff6ff; padding: 12px; margin-bottom: 8px; border-radius: 8px; font-size: 0.85em; cursor: pointer; border-left: 3px solid var(--primary); }
-        .history-item:hover { background: #dbeafe; }
     </style>
 </head>
 <body>
@@ -47,7 +44,7 @@
 <div class="container">
     <header style="text-align: center; margin-bottom: 30px;">
         <h1 style="color: var(--primary); margin-bottom: 5px;">💼 BizMind AI : 인공지능 가상 이사회</h1>
-        <p style="color: #6b7280; margin-top: 0;">Auth + DB + GAS 백엔드 통합 대시보드</p>
+        <p style="color: #6b7280; margin-top: 0;">Auth + GAS 백엔드 통합 대시보드 (진단기록 제거됨)</p>
     </header>
 
     <div class="card" id="authSection" style="max-width: 450px; margin: 0 auto;">
@@ -72,33 +69,25 @@
             <button id="logoutBtn" style="width: auto; margin-top: 0; background: #ef4444; padding: 8px 15px;">로그아웃</button>
         </div>
 
-        <div style="display: grid; grid-template-columns: 2.5fr 1fr; gap: 20px; margin-bottom: 20px;">
-            <div class="card" style="margin-bottom: 0;">
-                <h3>📊 실시간 매장 경영 정보 입력</h3>
-                
-                <div class="dropzone" id="dropzone">
-                    📂 여기에 재무제표 파일(CSV)을 드래그하거나 클릭하여 업로드하세요.
-                    <input type="file" id="fileInput" accept=".csv" style="display: none;">
-                </div>
-
-                <div class="grid-inputs">
-                    <div class="input-group"><label>매출액 (월/원)</label><input type="number" id="revenue" placeholder="예: 15000000"></div>
-                    <div class="input-group"><label>영업비용 (월/원)</label><input type="number" id="expenses" placeholder="예: 12000000"></div>
-                    <div class="input-group"><label>총 자산 (원)</label><input type="number" id="assets" placeholder="예: 80000000"></div>
-                    <div class="input-group"><label>총 부채/대출 (원)</label><input type="number" id="liabilities" placeholder="예: 30000000"></div>
-                </div>
-                <div class="input-group" style="margin-top: 10px;">
-                    <label>현재 직면한 핵심 경영 안건 및 고민</label>
-                    <textarea id="note" rows="3" placeholder="현재 매장이 직면한 핵심 안건을 입력하세요."></textarea>
-                </div>
-                <button id="analyzeBtn">🚀 가상 이사회 소집 (GAS 안전 호출)</button>
+        <div class="card" style="margin-bottom: 20px;">
+            <h3>📊 실시간 매장 경영 정보 입력</h3>
+            
+            <div class="dropzone" id="dropzone">
+                📂 여기에 재무제표 파일(CSV)을 드래그하거나 클릭하여 업로드하세요.
+                <input type="file" id="fileInput" accept=".csv" style="display: none;">
             </div>
 
-            <div class="card" style="margin-bottom: 0;">
-                <h3>📂 진단 기록 (클라우드 DB)</h3>
-                <p style="font-size: 0.8em; color: #9ca3af; margin-top: -10px;">클릭 시 과거 입력 데이터 복원</p>
-                <ul class="history-list" id="historyList"></ul>
+            <div class="grid-inputs">
+                <div class="input-group"><label>매출액 (월/원)</label><input type="number" id="revenue" placeholder="예: 15000000"></div>
+                <div class="input-group"><label>영업비용 (월/원)</label><input type="number" id="expenses" placeholder="예: 12000000"></div>
+                <div class="input-group"><label>총 자산 (원)</label><input type="number" id="assets" placeholder="예: 80000000"></div>
+                <div class="input-group"><label>총 부채/대출 (원)</label><input type="number" id="liabilities" placeholder="예: 30000000"></div>
             </div>
+            <div class="input-group" style="margin-top: 10px;">
+                <label>현재 직면한 핵심 경영 안건 및 고민</label>
+                <textarea id="note" rows="3" placeholder="현재 매장이 직면한 핵심 안건을 입력하세요."></textarea>
+            </div>
+            <button id="analyzeBtn">🚀 가상 이사회 소집 (GAS 안전 호출)</button>
         </div>
 
         <div id="loading" style="display: none; text-align: center; margin: 30px 0; font-weight: bold; color: var(--primary);">
