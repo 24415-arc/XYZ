@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BizMind AI - 가상 이사회</title>
-    <script src="https://script.google.com/macros/s/AKfycbxcjGP9jiANasUBhY6PlgW1YwfZ8nyV0qAvB6zOqH6EJG26xWVIeSNFTWHHBp5p6s_l/exec">
+    
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    
     <style>
         :root { 
             --primary: #2563eb; --bg: #f3f4f6; --card: #ffffff; 
@@ -127,7 +129,7 @@
     import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // 🚨 [필수 확인] 사장님의 실제 파이어베이스 설정 값을 유지하세요.
+    // 파이어베이스 설정 유지
     const firebaseConfig = {
         apiKey: "AIzaSyAOwxt7f8_J5ZNxpNZ5R8jkD0bDjsahvek",
         authDomain: "test-2bc53.firebaseapp.com",
@@ -141,8 +143,8 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // 🚨 [가장 중요] 3단계 안내를 보고 새로 뽑은 '구글 웹 앱 URL'을 여기에 넣으셔야 캐시가 깨집니다!
-    const GAS_WEB_APP_URL = "여기에_새로_배포한_구글_웹앱_URL을_넣으세요";
+    // 🚨 [주의] 여기에 반드시 사장님의 진짜 구글 웹 앱 URL(GAS 배포 주소)을 넣으셔야 합니다!
+    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxcjGP9jiANasUBhY6PlgW1YwfZ8nyV0qAvB6zOqH6EJG26xWVIeSNFTWHHBp5p6s_l/exec";
     
     let currentUser = null;
     let globalAudioText = ""; 
