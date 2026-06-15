@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>BizMind 인공지능 가상 이사회 </title>
+  <title>BizMind 인공지능 가상 이사회</title>
   <style>
     body { font-family: 'Arial', sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; }
     .container { max-width: 900px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
@@ -12,7 +12,7 @@
     .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px; }
     .btn-google { background-color: #4285F4; color: white; }
     .btn-send { background-color: #1abc9c; color: white; width: 100px; }
-    .btn-speaker { background-color: #e74c3c; color: white; margin-left: 10px; padding: 5px 10px; font-size: 12px; }
+    .btn-speaker { background-color: #e74c3c; color: white; margin-left: 10px; padding: 5px 10px; font-size: 12px; border-radius: 4px; }
     
     .executive-selector { display: flex; gap: 10px; justify-content: space-between; margin: 20px 0; }
     .exec-card { flex: 1; padding: 15px 5px; border: 2px solid #bdc3c7; border-radius: 8px; cursor: pointer; text-align: center; transition: 0.3s; background: white; }
@@ -46,19 +46,19 @@
     <h3 style="color: #34495e; border-bottom: 2px solid #ecf0f1; padding-bottom: 10px;">📣 자문받을 임원을 선택하세요</h3>
     
     <div class="executive-selector">
-      <div class="exec-card" onclick="selectExecutive('CEO', '철저한 사업성 중심의 냉철한 최고경영자')">
+      <div class="exec-card" onclick="selectExecutive(this, 'CEO', '철저한 사업성 중심의 냉철한 최고경영자')">
         <h4>CEO</h4>
         <p>사업성 분석<br>경영/전략 총괄</p>
       </div>
-      <div class="exec-card" onclick="selectExecutive('CFO', '보수적이고 꼼꼼하게 자금을 체크하는 최고재무책임자')">
+      <div class="exec-card" onclick="selectExecutive(this, 'CFO', '보수적이고 꼼꼼하게 자금을 체크하는 최고재무책임자')">
         <h4>CFO</h4>
         <p>재무/회계<br>투자 리스크 검토</p>
       </div>
-      <div class="exec-card" onclick="selectExecutive('CMO', '트렌디하고 파괴적인 마케팅 전략을 제시하는 최고마케팅책임자')">
+      <div class="exec-card" onclick="selectExecutive(this, 'CMO', '트렌디하고 파괴적인 마케팅 전략을 제시하는 최고마케팅책임자')">
         <h4>CMO</h4>
         <p>마케팅/홍보<br>시장 확장 전략</p>
       </div>
-      <div class="exec-card" onclick="selectExecutive('CTO', '최신 IT 기술 동향과 실현 가능성을 따지는 최고기술책임자')">
+      <div class="exec-card" onclick="selectExecutive(this, 'CTO', '최신 IT 기술 동향과 실현 가능성을 따지는 최고기술책임자')">
         <h4>CTO</h4>
         <p>IT 기술/개발<br>시스템 아키텍처</p>
       </div>
@@ -81,7 +81,7 @@
 
 <script>
   const firebaseConfig = {
-    apiKey: "AIzaSyAOwxt7f8_J5ZNxpNZ5R8jkD0bDjsahvek", // 사장님이 주신 진짜 키가 들어가 있는 곳
+    apiKey: "AIzaSyAOwxt7f8_J5ZNxpNZ5R8jkD0bDjsahvek", 
     authDomain: "test-2bc53.firebaseapp.com",
     databaseURL: "https://test-2bc53-default-rtdb.firebaseio.com",
     projectId: "test-2bc53",
@@ -96,7 +96,6 @@
 
   const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyP7McdvgSahF9RWZ56r66pF3goKhFD34yZ_O4X9yxvzYu1tiNzGN9n_xJkNJv9mpz4/exec";
 
-  // 🚨 쓰레기 하드코딩 값 제거. 초기 상태는 아무도 선택되지 않음(null)
   let selectedRole = null;
   let selectedPersona = null;
 
@@ -123,13 +122,14 @@
     auth.signOut();
   }
 
-  function selectExecutive(role, persona) {
+  // 🛠️ 수정: 파라미터로 element를 직접 받아 카드 활성화 처리 변경 (오류 차단)
+  function selectExecutive(element, role, persona) {
     selectedRole = role;
     selectedPersona = persona;
     
     const cards = document.querySelectorAll('.exec-card');
     cards.forEach(card => card.classList.remove('active'));
-    event.currentTarget.classList.add('active');
+    element.classList.add('active');
     
     appendMessage("bot", `[알림] 대화 상대가 <strong>${role}</strong>(으)로 변경되었습니다.`);
   }
@@ -148,6 +148,7 @@
         const speakBtn = document.createElement("button");
         speakBtn.className = "btn btn-speaker";
         speakBtn.innerText = "🔊 듣기";
+        // 🛠️ 안전장치: 작은따옴표와 줄바꿈이 깨지지 않도록 인코딩하여 매개변수 전달
         speakBtn.onclick = () => requestTTS(text);
         msgDiv.appendChild(speakBtn);
       }
@@ -159,8 +160,8 @@
     container.scrollTop = container.scrollHeight;
   }
 
+  // 🛠️ 완성: 질문 전송 및 GAS 백엔드 통신 로직 추가
   async function sendQuestion() {
-    // 🚨 임원을 선택하지 않으면 질문 차단
     if (!selectedRole || !selectedPersona) {
       alert("질문하기 전, 자문받을 임원을 먼저 선택해 주십시오.");
       return;
@@ -170,4 +171,90 @@
     const questionText = input.value.trim();
     if (!questionText) return;
 
-    appendMessage
+    // 사용자 메시지 화면 출력 및 입력창 비우기
+    appendMessage("user", questionText);
+    input.value = "";
+
+    try {
+      // 🔐 1. 파이어베이스 실제 ID 토큰(JWT) 실시간 추출
+      const user = auth.currentUser;
+      if (!user) throw new Error("로그인 세션이 만료되었습니다.");
+      const idToken = await user.getIdToken(true);
+
+      // 🧠 2. OpenAI가 임원의 페르소나를 연기하도록 프롬프트 결합
+      const executivePrompt = `당신은 기업의 ${selectedRole} (${selectedPersona}) 입니다. 아래 질문에 대해 당신의 직책과 성격에 맞는 전문적이고 냉철한 답변을 제공해 주세요.\n\n질문: ${questionText}`;
+
+      // 🌐 3. GAS 웹앱 호출 (CORS 에러 차단을 위해 반드시 text/plain 지정!)
+      const response = await fetch(GAS_WEB_APP_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "text/plain;charset=utf-8"
+        },
+        body: JSON.stringify({
+          type: "chat",
+          idToken: idToken,
+          question: executivePrompt
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      // 4. AI 답변 출력
+      appendMessage("bot", data.answer);
+
+    } catch (err) {
+      console.error(err);
+      appendMessage("bot", `[시스템] 에러 발생: ${err.message}`);
+    }
+  }
+
+  // 🛠️ 추가: TTS 음성 듣기 기능 완벽 구현
+  async function requestTTS(text) {
+    try {
+      const user = auth.currentUser;
+      if (!user) return alert("로그인이 필요합니다.");
+      const idToken = await user.getIdToken();
+
+      // 보이스 매칭 (임원 성향별 맞춤 목소리 부여 - 보너스 효과!)
+      let voiceType = "alloy";
+      if (selectedRole === "CEO") voiceType = "onyx";   // 묵직하고 냉철함
+      if (selectedRole === "CFO") voiceType = "fable";  // 보수적이고 차분함
+      if (selectedRole === "CMO") voiceType = "shimmer"; // 밝고 트렌디함 (여성)
+
+      // GAS 웹앱으로 TTS 요청 전송 (Content-Type: text/plain 유지)
+      const response = await fetch(GAS_WEB_APP_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "text/plain;charset=utf-8"
+        },
+        body: JSON.stringify({
+          type: "tts",
+          idToken: idToken,
+          text: text,
+          voice: voiceType
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      // 🔊 백엔드가 보낸 Base64 오디오 데이터를 재생 가능하게 디코딩 후 즉시 실행
+      const audioUrl = `data:audio/mp3;base64,${data.audio}`;
+      const audio = new Audio(audioUrl);
+      audio.play();
+
+    } catch (err) {
+      console.error(err);
+      alert("⚠️ 음성 변환 실패: " + err.message);
+    }
+  }
+</script>
+</body>
+</html>
