@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BizMind AI - 가상 이사회</title>
+    <title>BizMind AI - 가상 이사회 </title>
     
     <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
     
@@ -37,6 +37,9 @@
         .board-card.chro { border-color: var(--chro); }
         
         #appSection { display: none; }
+        .history-list { list-style: none; padding: 0; max-height: 350px; overflow-y: auto; }
+        .history-item { background: #eff6ff; padding: 12px; margin-bottom: 8px; border-radius: 8px; font-size: 0.85em; cursor: pointer; border-left: 3px solid var(--primary); transition: background 0.2s; }
+        .history-item:hover { background: #dbeafe; }
     </style>
 </head>
 <body>
@@ -44,7 +47,6 @@
 <div class="container">
     <header style="text-align: center; margin-bottom: 30px;">
         <h1 style="color: var(--primary); margin-bottom: 5px;">💼 BizMind AI : 인공지능 가상 이사회</h1>
-        <p style="color: #6b7280; margin-top: 0;">Auth + GAS 백엔드 통합 대시보드 (진단기록 제거됨)</p>
     </header>
 
     <div class="card" id="authSection" style="max-width: 450px; margin: 0 auto;">
@@ -69,33 +71,41 @@
             <button id="logoutBtn" style="width: auto; margin-top: 0; background: #ef4444; padding: 8px 15px;">로그아웃</button>
         </div>
 
-        <div class="card" style="margin-bottom: 20px;">
-            <h3>📊 실시간 매장 경영 정보 입력</h3>
-            
-            <div class="dropzone" id="dropzone">
-                📂 여기에 재무제표 파일(CSV)을 드래그하거나 클릭하여 업로드하세요.
-                <input type="file" id="fileInput" accept=".csv" style="display: none;">
+        <div style="display: grid; grid-template-columns: 2.3fr 1fr; gap: 20px; margin-bottom: 20px;">
+            <div class="card" style="margin-bottom: 0;">
+                <h3>📊 실시간 매장 경영 정보 입력</h3>
+                
+                <div class="dropzone" id="dropzone">
+                    📂 여기에 재무제표 파일(CSV)을 드래그하거나 클릭하여 업로드하세요.
+                    <input type="file" id="fileInput" accept=".csv" style="display: none;">
+                </div>
+
+                <div class="grid-inputs">
+                    <div class="input-group"><label>매출액 (월/원)</label><input type="number" id="revenue" placeholder="예: 15000000"></div>
+                    <div class="input-group"><label>영업비용 (월/원)</label><input type="number" id="expenses" placeholder="예: 12000000"></div>
+                    <div class="input-group"><label>총 자산 (원)</label><input type="number" id="assets" placeholder="예: 80000000"></div>
+                    <div class="input-group"><label>총 부채/대출 (원)</label><input type="number" id="liabilities" placeholder="예: 30000000"></div>
+                </div>
+                <div class="input-group" style="margin-top: 10px;">
+                    <label>현재 직면한 핵심 경영 안건 및 고민</label>
+                    <textarea id="note" rows="3" placeholder="현재 매장이 직면한 핵심 안건을 입력하세요."></textarea>
+                </div>
+                <button id="analyzeBtn">🚀 가상 이사회 소집 및 클라우드 저장</button>
             </div>
 
-            <div class="grid-inputs">
-                <div class="input-group"><label>매출액 (월/원)</label><input type="number" id="revenue" placeholder="예: 15000000"></div>
-                <div class="input-group"><label>영업비용 (월/원)</label><input type="number" id="expenses" placeholder="예: 12000000"></div>
-                <div class="input-group"><label>총 자산 (원)</label><input type="number" id="assets" placeholder="예: 80000000"></div>
-                <div class="input-group"><label>총 부채/대출 (원)</label><input type="number" id="liabilities" placeholder="예: 30000000"></div>
+            <div class="card" style="margin-bottom: 0;">
+                <h3>📂 진단 기록 (Realtime DB)</h3>
+                <p style="font-size: 0.8em; color: #9ca3af; margin-top: -10px;">클릭 시 해당 시점 데이터 즉시 복원</p>
+                <ul class="history-list" id="historyList"></ul>
             </div>
-            <div class="input-group" style="margin-top: 10px;">
-                <label>현재 직면한 핵심 경영 안건 및 고민</label>
-                <textarea id="note" rows="3" placeholder="현재 매장이 직면한 핵심 안건을 입력하세요."></textarea>
-            </div>
-            <button id="analyzeBtn">🚀 가상 이사회 소집 (GAS 안전 호출)</button>
         </div>
 
         <div id="loading" style="display: none; text-align: center; margin: 30px 0; font-weight: bold; color: var(--primary);">
-            ⏳ CFO, CMO, COO, CHRO가 안전 백엔드 내부에서 리포트를 분석 중입니다...
+            ⏳ CFO, CMO, COO, CHRO가 구글 보안 서버 내부에서 분석 중입니다...
         </div>
 
         <div id="resultSection" style="display: none;">
-            <h2 style="text-align: center; color: #1e3a8a; margin-top: 40px;">📋 가상 이사회 최고경영진 복합 분석 보고서</h2>
+            <h2 style="text-align: center; color: #1e3a8a; margin-top: 40px;">📋 가상 이사회 복합 분석 보고서</h2>
             
             <div class="board-grid">
                 <div class="board-card cfo" id="resCFO"></div>
@@ -105,8 +115,8 @@
             </div>
             
             <div class="card" style="margin-top: 30px; text-align: center; background: #f0fdf4; border: 1px solid #bbf7d0;">
-                <h3>🎧 4대 임원 종합 의견 오디오 브리핑 리포트</h3>
-                <button id="ttsBtn" style="background: #10b981; width: auto; min-width: 250px; padding: 14px;">🔊 브리핑 음성 파일 생성 (백엔드 TTS)</button>
+                <h3>🎧 4대 임원 종합 의견 오디오 브리핑</h3>
+                <button id="ttsBtn" style="background: #10b981; width: auto; min-width: 250px; padding: 14px;">🔊 종합 브리핑 음성 파일 생성</button>
                 <div id="audioPlayer" style="margin-top: 20px;"></div>
             </div>
         </div>
@@ -116,12 +126,13 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getDatabase, ref, push, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-    // 파이어베이스 설정 유지
+    // 파이어베이스 RTDB 설정
     const firebaseConfig = {
         apiKey: "AIzaSyAOwxt7f8_J5ZNxpNZ5R8jkD0bDjsahvek",
         authDomain: "test-2bc53.firebaseapp.com",
+        databaseURL: "https://test-2bc53-default-rtdb.firebaseio.com", 
         projectId: "test-2bc53",
         storageBucket: "test-2bc53.appspot.com",
         messagingSenderId: "153078496505", 
@@ -130,22 +141,15 @@
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    const db = getFirestore(app);
+    const db = getDatabase(app); 
 
-    // 🚨 [주의] 여기에 반드시 사장님의 진짜 구글 웹 앱 URL(GAS 배포 주소)을 넣으셔야 합니다!
-    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwhhfDIHc9n0EsObpuJHrjZB9UDcBkg4yJYEt5jnyE4KsNIe-OUNHg9lhEQCN5M6zb-/exec";
+    // 사장님의 GAS 백엔드 주소
+    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyM7G2-M4q9crTdB7O6PPA1UdBfDlOL63n4_OhTzDSSIridk5Hn5f86JTsK97OHVRiw/exec";
     
     let currentUser = null;
     let globalAudioText = ""; 
 
-    const BOARD_SYSTEM_PROMPTS = {
-        CFO: `당신은 노련한 전문 재무고문(CFO)입니다. 제공된 '확정 재무 지표'만을 근거로 비용 통제와 자금 리스크를 따지세요. 문장 서두에 "💡 [재무고문 CFO 분석 의견]"을 달고, 현금 유동성 위기 경고 및 구체적인 비용 절감 전략 2가지를 냉철하고 보수적인 톤으로 제안하세요.`,
-        CMO: `당신은 공격적인 로컬 상권 마케팅 전략가(CMO)입니다. 제공된 지표를 기반으로 마케팅 예산을 확보해 매출 자체를 획기적으로 키울 돌파구를 모색하세요. 문장 서두에 "🚀 [마케팅전략 CMO 분석 의견]"을 달고, 사장님의 핵심 안건을 해결할 수 있는 트렌디한 온/오프라인 세일즈 아이디어 2가지를 열정적인 어조로 제안하세요.`,
-        COO: `당신은 매장 프로세스 효율화 및 원가 최적화 전문가(COO)입니다. 매장 내부의 식자재 원가율, 배달 플랫폼 수수료 누수 등 시스템 비효율을 진단합니다. 문장 서두에 "⚙️ [운영최적화 COO 분석 의견]"을 달고, 당장 내일부터 매장에 즉시 도입 가능한 프로세스 개선 및 고정비 세이브 방안 2가지를 담백하고 직관적으로 서술하세요.`,
-        CHRO: `당신은 노무 관리 및 조직 심리 전문가(CHRO)입니다. 인건비를 단순 소목성 지출이 아닌 인적 생산성 지표로 분석합니다. 문장 서두에 "🤝 [조직인사 CHRO 분석 의견]"을 달고, 현재 재무 상황에 따른 사장님의 정신적 번아웃 방지책 및 핵심 알바/직원의 이탈 방지 케어 전략 2가지를 따뜻하게 조언하세요.`
-    };
-
-    // SheetJS CSV 파싱
+    // CSV/엑셀 파서 로직
     const dropzone = document.getElementById('dropzone');
     const fileInput = document.getElementById('fileInput');
     dropzone.addEventListener('click', () => fileInput.click());
@@ -180,14 +184,14 @@
         reader.readAsArrayBuffer(file);
     }
 
-    // Auth 제어
+    // 로그인 및 회원가입 제어
     onAuthStateChanged(auth, (user) => {
         if (user) {
             currentUser = user;
             document.getElementById('authSection').style.display = 'none';
             document.getElementById('appSection').style.display = 'block';
             document.getElementById('userInfo').innerText = `👤 계정: ${user.email}`;
-            loadHistory();
+            loadHistory(); 
         } else {
             currentUser = null;
             document.getElementById('authSection').style.display = 'block';
@@ -203,7 +207,7 @@
     });
     document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
 
-    // 이사회 소집 엔진
+    // 이사회 분석 실행
     document.getElementById('analyzeBtn').addEventListener('click', async () => {
         const rev = Number(document.getElementById('revenue').value || 0);
         const exp = Number(document.getElementById('expenses').value || 0);
@@ -219,25 +223,27 @@
         document.getElementById('loading').style.display = 'block';
         document.getElementById('resultSection').style.display = 'none';
 
-        const metricsPrompt = `\n\n[시스템 확정 지표]\n- 월 매출: ${rev.toLocaleString()}원\n- 월 비용: ${exp.toLocaleString()}원\n- 자산: ${ast.toLocaleString()}원\n- 부채: ${lia.toLocaleString()}원\n- 이익률: ${margin}%\n- 부채비율: ${debt}%\n\n[안건]\n"${note}"`;
-
         try {
-            const [cfoRes, cmoRes, cooRes, chroRes] = await Promise.all([
-                callAgent(BOARD_SYSTEM_PROMPTS.CFO + metricsPrompt),
-                callAgent(BOARD_SYSTEM_PROMPTS.CMO + metricsPrompt),
-                callAgent(BOARD_SYSTEM_PROMPTS.COO + metricsPrompt),
-                callAgent(BOARD_SYSTEM_PROMPTS.CHRO + metricsPrompt)
-            ]);
+            // 프롬프트 없이 숫자(데이터)만 백엔드로 보냄!
+            const response = await fetch(GAS_WEB_APP_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ rev, exp, ast, lia, margin, debt, note })
+            });
+            
+            const data = await response.json();
+            if (data.error) throw new Error(data.error);
 
-            document.getElementById('resCFO').innerText = cfoRes;
-            document.getElementById('resCMO').innerText = cmoRes;
-            document.getElementById('resCOO').innerText = cooRes;
-            document.getElementById('resCHRO').innerText = chroRes;
+            // GAS가 병렬로 가져온 4개의 결과 뿌리기
+            document.getElementById('resCFO').innerText = data.cfo;
+            document.getElementById('resCMO').innerText = data.cmo;
+            document.getElementById('resCOO').innerText = data.coo;
+            document.getElementById('resCHRO').innerText = data.chro;
 
-            globalAudioText = `이사회 브리핑입니다. CFO 의견입니다. ${cfoRes} CMO 의견입니다. ${cmoRes} COO 의견입니다. ${cooRes} CHRO 의견입니다. ${chroRes}`;
+            globalAudioText = `이사회 종합 브리핑입니다. CFO 의견. ${data.cfo} CMO 의견. ${data.cmo} COO 의견. ${data.coo} CHRO 의견. ${data.chro}`;
             document.getElementById('resultSection').style.display = 'block';
 
-            await saveDataToFirestore(rev, exp, ast, lia, margin, debt, note);
+            await saveDataToRTDB(rev, exp, ast, lia, margin, debt, note);
 
         } catch (error) {
             alert("회의 실패: " + error.message);
@@ -246,73 +252,81 @@
         }
     });
 
-    async function callAgent(combinedPrompt) {
-        const response = await fetch(GAS_WEB_APP_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
-            body: JSON.stringify({ question: combinedPrompt })
-        });
-        const data = await response.json();
-        if (data.error) throw new Error(data.error);
-        return data.answer; 
-    }
-
-    // Firestore 데이터 CRUD
-    async function saveDataToFirestore(rev, exp, ast, lia, margin, debt, note) {
+    // 리얼타임 데이터베이스 (RTDB) 저장
+    async function saveDataToRTDB(rev, exp, ast, lia, margin, debt, note) {
         if (!currentUser) return;
         try {
-            await addDoc(collection(db, "board_reports"), {
-                uid: currentUser.uid,
+            const userRef = ref(db, 'board_reports/' + currentUser.uid);
+            await push(userRef, {
                 revenue: rev, expenses: exp, assets: ast, liabilities: lia,
                 profitMargin: margin, debtRatio: debt, topic: note,
-                timestamp: serverTimestamp()
+                timestamp: Date.now() 
             });
-            loadHistory();
-        } catch (e) { console.error("저장 실패:", e); }
+            loadHistory(); 
+        } catch (e) { console.error("RTDB 저장 실패:", e); }
     }
 
+    // 리얼타임 데이터베이스 (RTDB) 로드
     async function loadHistory() {
         const list = document.getElementById('historyList');
         list.innerHTML = "";
         if (!currentUser) return;
         try {
-            const q = query(collection(db, "board_reports"), where("uid", "==", currentUser.uid), orderBy("timestamp", "desc"));
-            const querySnapshot = await getDocs(q);
-            querySnapshot.forEach((doc) => {
-                const data = doc.data();
+            const userRef = ref(db, 'board_reports/' + currentUser.uid);
+            const snapshot = await get(userRef);
+            
+            let itemsArray = [];
+            if (snapshot.exists()) {
+                snapshot.forEach((childSnapshot) => {
+                    itemsArray.push({ id: childSnapshot.key, ...childSnapshot.val() });
+                });
+            }
+
+            itemsArray.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+            itemsArray.forEach((data) => {
                 const li = document.createElement('li');
                 li.className = 'history-item';
-                li.innerText = `📈 이익률 ${data.profitMargin}% / 부채 ${data.debtRatio}%\n[안건]: ${(data.topic || "").substring(0,18)}...`;
+                li.innerText = `📈 이익률 ${data.profitMargin}% / 부채 ${data.debtRatio}%\n[안건]: ${(data.topic || "").substring(0,15)}...`;
+                
                 li.onclick = () => {
-                    document.getElementById('revenue').value = data.revenue || "";
-                    document.getElementById('expenses').value = data.expenses || "";
-                    document.getElementById('assets').value = data.assets || "";
-                    document.getElementById('liabilities').value = data.liabilities || "";
+                    document.getElementById('revenue').value = data.revenue !== undefined ? data.revenue : "";
+                    document.getElementById('expenses').value = data.expenses !== undefined ? data.expenses : "";
+                    document.getElementById('assets').value = data.assets !== undefined ? data.assets : "";
+                    document.getElementById('liabilities').value = data.liabilities !== undefined ? data.liabilities : "";
                     document.getElementById('note').value = data.topic || "";
-                    alert("데이터가 로드되었습니다.");
                 };
                 list.appendChild(li);
             });
-        } catch (e) { console.error("읽기 실패:", e); }
+        } catch (e) { 
+            console.error("RTDB 읽기 실패:", e); 
+        }
     }
 
-    // 백엔드 연동 고속 TTS 엔진
+    // TTS 오디오 브리핑 엔진
     document.getElementById('ttsBtn').addEventListener('click', async () => {
         const btn = document.getElementById('ttsBtn');
         if(!globalAudioText) return alert("분석 결과가 비어있습니다.");
-        btn.innerText = "⏳ 백엔드 음성 합성 중...";
+        btn.innerText = "⏳ 백엔드 오디오 파일 생성 중...";
         btn.disabled = true;
 
         try {
             const response = await fetch(GAS_WEB_APP_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ type: 'tts', text: globalAudioText.substring(0, 3500) })
+                body: JSON.stringify({ 
+                    type: 'tts', 
+                    text: globalAudioText.substring(0, 3500),
+                    model: 'tts-1',
+                    voice: 'alloy' 
+                })
             });
+            
             const data = await response.json();
             if(data.error) throw new Error(data.error);
 
-            const binaryString = atob(data.audio);
+            // Base64를 MP3로 변환
+            const binaryString = atob(data.audioBase64);
             const bytes = new Uint8Array(binaryString.length);
             for (let i = 0; i < binaryString.length; i++) { bytes[i] = binaryString.charCodeAt(i); }
             
@@ -326,7 +340,7 @@
         } catch (error) {
             alert("TTS 실패: " + error.message);
         } finally {
-            btn.innerText = "🔊 브리핑 음성 파일 생성 (백엔드 TTS)";
+            btn.innerText = "🔊 종합 브리핑 음성 파일 생성";
             btn.disabled = false;
         }
     });
